@@ -1,3 +1,5 @@
+#include <cstddef>
+#include <stdexcept>
 #include <utility>
 
 template <typename T, std::size_t Size> class array
@@ -52,10 +54,41 @@ public:
     }
 
     ~array() { delete[] m_ptr; }
+
+    T& operator[](std::size_t index) { return m_ptr[index]; }
+    T& at(std::size_t index) const
+    {
+        if (index >= Size)
+            throw std::out_of_range{ "Index out of range" };
+        return m_ptr[index];
+    }
+    void fill(const T& value)
+    {
+        for (std::size_t i{ 0 }; i < Size; ++i)
+            m_ptr[i] = value;
+    }
+    const T&              front() const { return m_ptr[0]; }
+    const T&              back() const { return m_ptr[Size - 1]; }
+    T*                    data() { return m_ptr; }
+    const T*              data() const { return m_ptr; }
+    T*                    begin() { return m_ptr; }
+    T*                    end() { return m_ptr + Size; }
+    constexpr std::size_t size() const { return Size; }
+    constexpr bool        empty() const { return Size == 0; }
 };
 
 int main()
 {
-    array<int, 5> a1;
+    array<int, 5> arr;
+    arr.fill(10);
+    arr[2]    = 3;
+    arr.at(3) = 4;
+
+    for (std::size_t i{ 0 }; i < arr.size(); ++i)
+        arr[i] *= 2;
+
+    for (int i : arr)
+        i *= 2;
+
     return 0;
 }
