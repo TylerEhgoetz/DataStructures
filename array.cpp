@@ -38,6 +38,19 @@ public:
         return *this;
     }
 
+    array(array&& other) noexcept
+        : m_ptr{ std::exchange(other.m_ptr, nullptr) }
+    {}
+
+    array& operator=(array&& other) noexcept
+    {
+        if (this == &other)
+            return *this;
+
+        m_ptr = std::exchange(other.m_ptr, nullptr);
+        return *this;
+    }
+
     ~array() { delete[] m_ptr; }
 };
 
