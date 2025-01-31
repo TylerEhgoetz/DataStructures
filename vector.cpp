@@ -1,4 +1,5 @@
 #include <initializer_list>
+#include <iostream>
 #include <memory>
 
 template <class T, class Allocator = std::allocator<T>>
@@ -18,6 +19,12 @@ private:
             Traits::destroy(m_allocator, m_data + i);
         }
         Traits::deallocate(m_allocator, m_data, m_capacity);
+    }
+
+    void try_increase_capacity()
+    {
+        if (m_size == m_capacity)
+            reserve(m_capacity == 0 ? 1 : m_capacity * 2);
     }
 
 public:
@@ -75,4 +82,38 @@ template <typename T, typename Allocator>
 Vector<T, Allocator>::~Vector()
 {
     deallocate();
+}
+
+template <typename T, typename Allocator>
+void Vector<T, Allocator>::push_back(const T& value)
+{
+    try_increase_capacity();
+    new (m_data + m_size++) T{ value };
+}
+
+template <typename T, typename Allocator>
+template <typename... Args>
+void Vector<T, Allocator>::emplace_back(Args&&... args)
+{
+    try_increase_capacity();
+    new (m_data + m_size++) T(std::forward<Args>(args)...);
+}
+
+template <typename T, typename Allocator>
+void Vector<T, Allocator>::clear()
+{
+    if (m_data == nullptr)
+        return;
+
+    for (size_t i{ 0 }; i < m_size; ++i)
+        m_data[i].~T();
+
+    m_size = 0;
+}
+
+int main()
+{
+    Vector<int> v{ 1, 2, 3 };
+    std::cout << v.size() << std::endl;
+    return 0;
 }
