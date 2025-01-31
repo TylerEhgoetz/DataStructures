@@ -67,13 +67,25 @@ void Vector<T, Allocator>::reserve(size_t capacity)
     if (capacity <= m_capacity)
         return;
 
-    T* newData = Traits::allocate(m_allocator, capacity);
+    T*     newData = Traits::allocate(m_allocator, capacity);
+    size_t i       = 0;
 
-    for (size_t i{ 0 }; i < m_size; ++i)
-        Traits::construct(m_allocator, newData + i, m_data[i]);
+    try
+    {
+        for (; i < m_size; ++i)
+            Traits::construct(m_allocator, newData + i, m_data[i]);
+    }
+    catch (...)
+    {
+        for (size_t j{ 0 }; j < i; ++j)
+            Traits::destroy(m_allocator, newData + j);
 
-    deallocate();
+        Traits::deallocate(m_allocator, newData, capacity);
 
+        throw;
+    }
+
+    deallocate();   // Destroy + deallocate old data
     m_data     = newData;
     m_capacity = capacity;
 }
