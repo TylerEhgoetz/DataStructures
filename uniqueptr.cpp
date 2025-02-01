@@ -37,6 +37,25 @@ public:
 
     ~UniquePointer() { m_deleter(m_ptr); }
 
+    T* release() noexcept
+    {
+        T* temp = m_ptr;
+        m_ptr   = nullptr;
+        return temp;
+    }
+
+    void reset(T* ptr) noexcept
+    {
+        delete m_ptr;
+        m_ptr = ptr;
+    }
+
+    void swap(UniquePointer& other) noexcept
+    {
+        std::swap(m_ptr, other.m_ptr);
+        std::swap(m_deleter, other.m_deleter);
+    }
+
     T*      operator->() const { return m_ptr; }
     T&      operator*() const { return *m_ptr; }
     T*      get() const { return m_ptr; }
