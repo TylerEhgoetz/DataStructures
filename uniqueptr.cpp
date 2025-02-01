@@ -36,4 +36,9 @@ public:
     }
 
     ~UniquePointer() { m_deleter(m_ptr); }
+
+    T*      operator->() const { return m_ptr; }
+    T&      operator*() const { return *m_ptr; }
+    T*      get() const { return m_ptr; }
+    Deleter get_deleter() const { return m_deleter; }
 };
