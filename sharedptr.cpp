@@ -44,9 +44,22 @@ public:
 
     ~SharedPointer() { release(); }
 
-    void   reset(T* ptr);
-    void   reset();
-    void   swap(SharedPointer& other) noexcept;
+    void reset(T* ptr)
+    {
+        release();
+
+        if (ptr != nullptr)
+        {
+            m_ptr          = ptr;
+            m_controlBlock = new ControlBlock{ 1 };
+        }
+    }
+    void reset() { release(); }
+    void swap(SharedPointer& other) noexcept
+    {
+        std::swap(m_ptr, other.m_ptr);
+        std::swap(m_controlBlock, other.m_controlBlock);
+    }
     size_t get_count() const
     {
         std::lock_guard<std::mutex> lock(m_controlBlock->m_mutex);
