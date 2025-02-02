@@ -66,10 +66,9 @@ private:
             {
                 delete m_ptr;
                 delete m_controlBlock;
+                m_ptr          = nullptr;
+                m_controlBlock = nullptr;
             }
-
-            m_ptr          = nullptr;
-            m_controlBlock = nullptr;
         }
     }
 
