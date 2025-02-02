@@ -40,7 +40,7 @@ public:
         }
         return *this;
     }
-    ~SharedPointer();
+    ~SharedPointer() { release(); }
 
 private:
     T*            m_ptr{ nullptr };
