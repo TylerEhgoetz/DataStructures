@@ -1,5 +1,6 @@
 
 #include <mutex>
+#include <utility>
 
 struct ControlBlock
 {
@@ -24,25 +25,21 @@ public:
     {
         if (this != &other)
         {
-            if (m_ptr)
-            {
-                std::lock_guard<std::mutex> lock(m_controlBlock->m_mutex);
-                if (--m_controlBlock->m_count == 0)
-                {
-                    delete m_ptr;
-                    delete m_controlBlock;
-                }
-
-                m_ptr          = nullptr;
-                m_controlBlock = nullptr;
-            }
-
+            release();
             copy(other);
         }
         return *this;
     }
-    SharedPointer(SharedPointer&& other) noexcept;
-    SharedPointer& operator=(SharedPointer&& other) noexcept;
+    SharedPointer(SharedPointer&& other) noexcept { steal(other); }
+    SharedPointer& operator=(SharedPointer&& other) noexcept
+    {
+        if (this != &other)
+        {
+            release();
+            steal(other);
+        }
+        return *this;
+    }
     ~SharedPointer();
 
 private:
@@ -58,5 +55,27 @@ private:
             m_controlBlock = other.m_controlBlock;
             ++m_controlBlock->m_count;
         }
+    }
+
+    void release() noexcept
+    {
+        if (m_ptr)
+        {
+            std::lock_guard<std::mutex> lock(m_controlBlock->m_mutex);
+            if (--m_controlBlock->m_count == 0)
+            {
+                delete m_ptr;
+                delete m_controlBlock;
+            }
+
+            m_ptr          = nullptr;
+            m_controlBlock = nullptr;
+        }
+    }
+
+    void steal(SharedPointer& other) noexcept
+    {
+        m_ptr          = std::exchange(other.m_ptr, nullptr);
+        m_controlBlock = std::exchange(other.m_controlBlock, nullptr);
     }
 };
