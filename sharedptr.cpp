@@ -30,6 +30,7 @@ public:
         }
         return *this;
     }
+
     SharedPointer(SharedPointer&& other) noexcept { steal(other); }
     SharedPointer& operator=(SharedPointer&& other) noexcept
     {
@@ -40,7 +41,22 @@ public:
         }
         return *this;
     }
+
     ~SharedPointer() { release(); }
+
+    void   reset(T* ptr);
+    void   reset();
+    void   swap(SharedPointer& other) noexcept;
+    size_t get_count() const
+    {
+        std::lock_guard<std::mutex> lock(m_controlBlock->m_mutex);
+        return m_controlBlock->m_count;
+    }
+
+    T* get() const { return m_ptr; }
+    T* operator->() const { return m_ptr; }
+    T& operator*() const { return *m_ptr; }
+    operator bool() const noexcept { return m_ptr != nullptr; }
 
 private:
     T*            m_ptr{ nullptr };
