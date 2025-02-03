@@ -7,7 +7,10 @@ template <typename T>
 class ProducerConsumer
 {
 public:
-    ProducerConsumer();
+    ProducerConsumer()
+        : m_producer{ [this] { Produce(); } },
+          m_consumer{ [this] { Consume(); } }
+    {}
 
 private:
     void Produce();
