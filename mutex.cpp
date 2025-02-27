@@ -5,24 +5,21 @@ class Mutex
 {
 public:
     Mutex()
-        : m_locked(false)
+        : m_flag(ATOMIC_FLAG_INIT)
     {}
 
     void lock()
     {
-        while (m_locked.exchange(true, std::memory_order_acquire))
+        while (m_flag.test_and_set(std::memory_order_acquire))
         {
             std::this_thread::yield();
         }
     }
 
-    void unlock() { m_locked.store(false, std::memory_order_release); }
+    void unlock() { m_flag.clear(std::memory_order_release); }
 
-    bool try_lock()
-    {
-        return !m_locked.exchange(true, std::memory_order_acquire);
-    }
+    bool try_lock() { return !m_flag.test_and_set(std::memory_order_acquire); }
 
 private:
-    std::atomic<bool> m_locked;
+    std::atomic_flag m_flag;
 };
